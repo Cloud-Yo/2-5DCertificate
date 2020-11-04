@@ -28,6 +28,7 @@ public class Player : MonoBehaviour
         TurnCharacter();
         _yVel = Mathf.Clamp(_yVel, -9.75f, 15f);
         ClimbLedge();
+        RollDive();
     }
 
     private void FixedUpdate()
@@ -96,12 +97,25 @@ public class Player : MonoBehaviour
 
     private void Jump()
     {
+        
+        
         _jumping = true;
-        _yVel = 0f;
-        _yVel += _jumpHeight;
-         _myAN.SetBool("Jumping", _jumping);
+        if(Mathf.Abs(_xVel) > 0.1f)
+        {
+            _yVel = 0f;
+            _yVel += _jumpHeight;
+        }
+        _myAN.SetBool("Jumping", _jumping);
 
         
+    }
+
+    private void RollDive()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            _myAN.SetTrigger("Roll");
+        }
     }
 
     private void ClimbLedge()
@@ -130,6 +144,7 @@ public void GrabLedge(Vector3 pos, Vector3 top)
         _gravity = 0f;
         _myCC.enabled = false;
         _myAN.SetBool("LedgeGrab", true);
+        _myAN.SetBool("Jumping", false);
     }
 
     public void StandFromClimb(Vector3 pos)
@@ -145,7 +160,7 @@ public void GrabLedge(Vector3 pos, Vector3 top)
 
     public bool IsPlayerRunning()
     {
-        bool ipr = _xVel != 0 ? true : false;
+        bool ipr = Mathf.Abs(_xVel) > 0.5 ? true : false;
         return ipr;
     }
 }
