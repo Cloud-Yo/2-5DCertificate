@@ -10,6 +10,7 @@ public class ElevatorControl : MonoBehaviour
     [SerializeField] private ElevatorBehavior _eB = null;
     [SerializeField] private GameObject _promptText = null;
     [SerializeField] private Animator _txtAN = null;
+    [SerializeField] private BoxCollider _myBC = null;
 
     private bool _playerAccess = false;
 
@@ -30,6 +31,8 @@ public class ElevatorControl : MonoBehaviour
             _lightMat.material.SetColor("_EmissionColor", _onCol);
             _promptText.SetActive(false);
             _eB.StartElevator();
+            _myBC.enabled = false;
+            _playerAccess = false;
             
             //set bool to true
             //start movement coroutine

@@ -68,6 +68,7 @@ public class ElevatorBehavior : MonoBehaviour
 
     public void StartElevator()
     {
+        
         _active = true;
         _eC.ElevatorLight(true);
     }

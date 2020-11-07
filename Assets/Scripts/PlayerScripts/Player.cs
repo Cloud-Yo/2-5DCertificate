@@ -6,7 +6,7 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
 
-    [SerializeField] private float _speed = 2f;
+    [SerializeField] private float _speed = 2f, _climbSpeed = 0.5f;
     [SerializeField] private float _gravity = 1f, _tempGravity = 0f, _gravityModifier = 0.5f;
     [SerializeField] private float _yVel = 0f, _xVel = 0f;
     [SerializeField] private Vector3 _direction = new Vector3(), _velocity = new Vector3();
@@ -17,7 +17,8 @@ public class Player : MonoBehaviour
     [SerializeField] private bool _jumping = false;
     [SerializeField] private GameObject _playerModel = null;
     [SerializeField] private GameObject _interactible = null;
-    [SerializeField] private GameObject _ledgeTopGO = null;
+    [SerializeField] private GameObject _positionTopGO = null;
+    [SerializeField] private bool _climbing = false;
 
     void Start()
     {
@@ -30,14 +31,20 @@ public class Player : MonoBehaviour
         _xVel = Input.GetAxisRaw("Horizontal");
 
  
-
-        TurnCharacter();
-        ClimbLedge();
-        RollDive();
+        if(!_climbing)
+        {
+            TurnCharacter();
+            ClimbLedge();
+            RollDive();
+            Movement();
+        }
+        else
+        {
+            ClimbLadder();
+        }
 
 
         _yVel = Mathf.Clamp(_yVel, -9.75f, 15f);
-        Movement();
 
     }
 
@@ -138,7 +145,7 @@ public void GrabLedge(Vector3 pos, GameObject top, GameObject go)
 
         transform.position = pos;
         _playerModel.transform.rotation = top.transform.localRotation;
-        _ledgeTopGO = top;
+        _positionTopGO = top;
         _gravity = 0f;
         _myCC.enabled = false;
         _myAN.SetBool("LedgeGrab", true);
@@ -162,22 +169,88 @@ public void GrabLedge(Vector3 pos, GameObject top, GameObject go)
         }
     }
 
-    public void StandFromClimb()
+    public void EndOfClimb()
     {
         
-        transform.position = _ledgeTopGO.transform.position;
-        _myAN.rootPosition = _ledgeTopGO.transform.position;
+        transform.position = _positionTopGO.transform.position;
+        _myAN.rootPosition = _positionTopGO.transform.position;
         _playerModel.transform.localPosition = Vector3.zero;
         _myCC.enabled = true;
         _gravity = _tempGravity;
+        _climbing = false;
+        _myAN.SetBool("OnLadder", false);
         //_myAN.SetTrigger("Standing");
         Debug.Log("called player Standing");
 
+    }
+
+    public void ClimbDownFromTop()
+    {
+        _myCC.enabled = true;
+        _climbing = true;
+        _myAN.SetBool("OnLadder", true);
+        _myAN.ResetTrigger("LadderTopDown");
+        Debug.Log("Climbed Down Called");
     }
 
     public bool IsPlayerRunning()
     {
         bool ipr = Mathf.Abs(_xVel) > 0.5 ? true : false;
         return ipr;
+    }
+
+    public float VelocityY()
+    {
+        return _yVel;
+    }
+
+    public void OnLadder(bool climb, Transform pos)
+    {
+        _gravity = 0;
+ 
+        if(_yVel < 0 && _climbing)
+        {
+            _climbing = false;
+            _myAN.SetBool("OnLadder", false);
+            _gravity = _tempGravity;
+        }
+        else
+        {
+            _climbing = climb;
+            _myAN.SetBool("OnLadder", true);
+
+        }
+    }
+
+    private void ClimbLadder()
+    {
+        _yVel = Input.GetAxisRaw("Vertical");
+        _myAN.SetFloat("ClimbSpeed", Mathf.Abs(_yVel));
+        _myAN.SetFloat("ClimbDirection", _yVel);
+        _direction = new Vector3(0f, _yVel, 0f);
+        _velocity = _direction * _climbSpeed;
+        _myCC.Move(_velocity);
+
+    }
+
+    public void TopOfLadder(GameObject topPos, GameObject downPos)
+    {
+        if(_yVel > 0)
+        {
+            _positionTopGO = topPos;
+            _gravity = 0f;
+            _myCC.enabled = false;
+            _myAN.SetTrigger("LadderTop");
+        }
+        else if(_yVel < 0)
+        {
+            _gravity = 0f;
+            _myCC.enabled = false;
+            _myAN.SetTrigger("LadderTopDown");
+            _playerModel.transform.rotation = Quaternion.Euler(0, _playerModel.transform.rotation.y +180, 0);
+            //_climbing = true;
+            //_myAN.SetBool("OnLadder", true);
+            transform.position = downPos.transform.position;
+        }
     }
 }
