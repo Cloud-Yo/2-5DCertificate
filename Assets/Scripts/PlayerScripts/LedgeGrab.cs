@@ -7,14 +7,14 @@ public class LedgeGrab : MonoBehaviour
     [SerializeField] private Player _player = null;
 
     
-    
+
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Ledge") && _player.IsPlayerRunning())
+        if (other.CompareTag("Ledge"))
         {
-            
-            _player.GrabLedge(other.GetComponent<Ledge>().HandPos(), other.GetComponent<Ledge>().StandPos());
+            other.GetComponent<Ledge>().LedgeGrab();
 
         }
     }
+
 }

@@ -19,9 +19,9 @@ public class StandFromClimbBehavior : StateMachineBehaviour
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
     override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        Vector3 pos = animator.transform.position + new Vector3(0, 6.85f, 1);
+
        
-        animator.transform.GetComponentInParent<Player>().StandFromClimb(pos);
+        animator.transform.GetComponentInParent<Player>().StandFromClimb();
 
        
     }
